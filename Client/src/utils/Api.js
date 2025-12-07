@@ -1,0 +1,43 @@
+const API_BASE = "http://localhost:8080"; 
+export function uploadAudio({ file, url, preset = "8d", onProgress }) {
+  return new Promise((resolve, reject) => {
+    const xhr = new XMLHttpRequest();
+
+    // Choose Backend Endpoint
+
+    const endpoint = file? "/api/audio/process-file" : "/api/audio/process-url"; 
+
+    const form = new FormData();
+    if (file) form.append("audio", file);
+    if (url) form.append("url", url);
+    form.append("effect", preset);
+
+    xhr.open("POST", API_BASE+endpoint, true);
+
+    xhr.upload.onprogress = function (e) {
+      if (e.lengthComputable && typeof onProgress === "function") {
+        const percent = Math.round((e.loaded / e.total) * 100);
+        onProgress(percent);
+      }
+    };
+
+    xhr.onload = function () {
+      if (xhr.status >= 200 && xhr.status < 300) {
+        try {
+          const res = JSON.parse(xhr.responseText);
+          resolve(res);
+        } catch (err) {
+          resolve({ success: true, message: "Uploaded (non-json response)", raw: xhr.responseText });
+        }
+      } else {
+        reject(new Error(`Upload failed: ${xhr.status} ${xhr.statusText}`));
+      }
+    };
+
+    xhr.onerror = function () {
+      reject(new Error("Network error during upload"));
+    };
+
+    xhr.send(form);
+  });
+}
