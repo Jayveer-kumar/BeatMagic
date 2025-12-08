@@ -7,7 +7,7 @@ import { uploadAudio } from "../utils/Api";
 import {   Headphones } from "lucide-react";
 import AlertMessage from "../components/Alert";
 
-const PRESETS = ["3d", "8d", "16d"];
+const PRESETS = ["3d", "8d", "16d","lofi"];
 
 export default function Hero() {
   // mode = "upload" or "url"
