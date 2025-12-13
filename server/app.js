@@ -29,7 +29,8 @@ async function main() {
     console.log("Database Connected :");
 
     // START CLEANUP WORKER AFTER DB CONNECT
-    import("./workers/cloudCleanup.js");
+    await import("./workers/cloudCleanup.worker.js");
+
 
   } catch (err) {
     console.error("MongoDB Connection Error :", err);
