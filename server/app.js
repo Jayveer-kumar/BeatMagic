@@ -1,6 +1,8 @@
 import dotenv from "dotenv";
 dotenv.config();
 import express from "express";
+const PORT = process.env.PORT || 5000;
+const app = express();
 import cors from "cors";
 
 const corsOptions = {
@@ -24,8 +26,7 @@ import emailRoutes from "./routes/emailRoute.js";
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-const PORT = process.env.PORT || 5000;
-const app = express();
+
 
 const mongooseOptions = {
   serverSelectionTimeoutMS: 30000,
