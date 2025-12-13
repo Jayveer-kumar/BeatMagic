@@ -1,4 +1,8 @@
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8080';
+console.log("Enviroment Variable : ");
+console.log(import.meta.env.VITE_API_URL);
+console.log("API URL : ");
+console.log(API_URL);
 export function uploadAudio({ file, url, preset = "8d" , systemAddress, onProgress }) {
   return new Promise((resolve, reject) => {
     const xhr = new XMLHttpRequest();
