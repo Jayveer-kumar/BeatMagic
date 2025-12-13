@@ -39,6 +39,8 @@ const corsOptions = {
     'http://localhost:3000',
     'https://beatmagic.vercel.app'
   ],
+  methods: ["GET","POST"],
+  allowedHeaders: ["Content-Type"],
   credentials: true
 };
 
