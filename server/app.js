@@ -1,15 +1,12 @@
 import dotenv from "dotenv";
 dotenv.config();
-
 import express from "express";
 import cors from "cors";
 import path from "path";
 import { fileURLToPath } from "url";
 import mongoose from "mongoose";
-// Import audio routes
 import audioRoutes from "./routes/audioRoutes.js";
 import emailRoutes from "./routes/emailRoute.js";
-import { applyEffect } from "./services/dspService.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -27,11 +24,8 @@ async function main() {
   try {
     await mongoose.connect(process.env.ATLAS_URL,mongooseOptions);
     console.log("Database Connected :");
-
     // START CLEANUP WORKER AFTER DB CONNECT
     await import("./workers/cloudCleanup.worker.js");
-
-
   } catch (err) {
     console.error("MongoDB Connection Error :", err);
   }
@@ -48,20 +42,6 @@ app.use(express.urlencoded({ extended: true }));
 app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 app.use("/processed", express.static(path.join(__dirname, "processed")));
 
-async function test(){
-    try {
-        const inputFile = 'uploads/1765271529955.mp3';
-        console.log("Testing DSP Service : ");
-        const output = await applyEffect(inputFile,'8d',{speed : 0.005});
-        console.log("Test Successfull : ");
-        console.log("Output file : ",output);                
-    } catch (err) {
-        console.error("Test Failed : ");
-        process.exit(1);        
-    }
-}
-
-// test();
 
 // use audio routes
 app.use((req, res, next) => {
@@ -97,7 +77,7 @@ server.setTimeout(15 * 60 * 1000);
 
 
 
-// YouTube URL → Buffer  
+// YouTube URL → Buffer    server/workers/cloudCleanup.worker.js
 // Upload File → Buffer  
 // ↓
 // runPython(buffer) → processedBuffer  
