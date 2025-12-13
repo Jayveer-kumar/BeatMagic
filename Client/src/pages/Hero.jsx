@@ -1,13 +1,14 @@
-// src/components/Hero.jsx
 import React, { useEffect, useRef, useState } from "react";
 import Typed from "typed.js";
-import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
+import KeyboardArrowDownIcon from "@mui/icons-material/KeyboardArrowDown";
 import Loader from "../components/Loader";
 import { uploadAudio } from "../utils/Api";
-import {   Headphones } from "lucide-react";
+import { Headphones, X } from "lucide-react";
 import AlertMessage from "../components/Alert";
+import FeedbackPopup from "../components/FeedbackPopup";
+import getSystemAddress from "../utils/getSystemAddress";
 
-const PRESETS = ["3d", "8d", "16d","lofi"];
+const PRESETS = ["3d", "8d", "16d"];
 
 export default function Hero() {
   // mode = "upload" or "url"
@@ -15,12 +16,14 @@ export default function Hero() {
     const qp = new URLSearchParams(window.location.search).get("mode");
     return qp === "url" ? "url" : "upload";
   });
+  const [showFeedbackBox, setShowFeedbackBox] = useState(false);
+  const [showFeedback, setShowFeedback] = useState(false);
 
-  const [ alert , setAlert ] = useState({
-    open:false,
-    type:"success",
-    message:""
-  })
+  const [alert, setAlert] = useState({
+    open: false,
+    type: "success",
+    message: "",
+  });
 
   // file/url state
   const [file, setFile] = useState(null);
@@ -34,7 +37,8 @@ export default function Hero() {
   const [processing, setProcessing] = useState(false);
   const [result, setResult] = useState(null);
   const [error, setError] = useState("");
-  const [ visibleOutput , setVisibleOutput ] = useState(true);
+  const [visibleOutput, setVisibleOutput] = useState(true);
+  const showPopup = showFeedbackBox && visibleOutput;
 
   // Typed effect ref
   const typedRef = useRef(null);
@@ -42,11 +46,11 @@ export default function Hero() {
 
   useEffect(() => {
     const typed = new Typed(typedEl.current, {
-      strings: [        
+      strings: [
         "Immersive Sound",
         "Spatial Rotation",
         "Binaural Motion",
-        "Dynamic 16D Audio"
+        "Dynamic 16D Audio",
       ],
       typeSpeed: 60,
       backSpeed: 40,
@@ -58,6 +62,13 @@ export default function Hero() {
     typedRef.current = typed;
     return () => typed.destroy();
   }, []);
+
+  // Show feedback message box when user get tha output
+  useEffect(() => {
+    if (visibleOutput) {
+      setShowFeedbackBox(true);
+    }
+  }, [visibleOutput]);
 
   // update query param when mode changes
   useEffect(() => {
@@ -113,118 +124,137 @@ export default function Hero() {
     }
   }
 
-  // async function handleConvert() {
-  //   setError("");
-  //   setResult(null);
-
-  //   if (mode === "upload") {
-  //     if (!file) {
-  //       setError("Please choose a file to upload.");
-  //       return;
-  //     }
-  //   } else {
-  //     // url mode
-  //     if (!urlInput || !/^https?:\/\//i.test(urlInput)) {
-  //       setError("Please paste a valid URL (starting with http/https).");
-  //       return;
-  //     }
-  //   }
-
-  //   setUploading(true);
-  //   // setProcessing(false);
-  //   setProgress(0);
-
-  //   try {
-  //     const res = await uploadAudio({
-  //       file: mode === "upload" ? file : null,
-  //       url: mode === "url" ? urlInput : null,
-  //       preset,
-  //       onProgress: (p) => setProgress(p),
-  //     });
-
-  //     setResult({
-  //       ...res,
-  //       downloadUrl: `http://localhost:8080/${res.result}`,
-  //     });
-
-  //     setFileName("");
-  //     setUrlInput("");
-
-  //     setUploading(false);
-  //     setProgress(100);
-  //   } catch (err) {
-  //     setError(err.message || "Upload failed");
-  //     setUploading(false);
-  //     setProgress(0);
-  //   }
-  // }
-
   async function handleConvert() {
-  setError("");
-  setResult(null);
+    setError("");
+    setResult(null);
 
-  if (mode === "upload") {
-    if (!file) {
-      setError("Please choose a file to upload.");
-      return;
-    }
-  } else {
-    if (!urlInput || !/^https?:\/\//i.test(urlInput)) {
-      setError("Please paste a valid URL.");
-      return;
-    }
-  }
-
-  setUploading(true); 
-  setProcessing(false);
-  setProgress(0);
-
-  try {
-    const res = await uploadAudio({
-      file: mode === "upload" ? file : null,
-      url: mode === "url" ? urlInput : null,
-      preset,
-      onProgress: (p) =>{
-        setProgress(p);
-        if(p===100){
-          setUploading(false);
-          setProcessing(true);
-        }
+    if (mode === "upload") {
+      if (!file) {
+        setError("Please choose a file to upload.");
+        return;
       }
-    });
+    } else {
+      if (!urlInput || !/^https?:\/\//i.test(urlInput)) {
+        setError("Please paste a valid URL.");
+        return;
+      }
+    }
 
-    // Upload finished → show processing loader
-    setProcessing(false);
-
-    // simulate small delay if needed
-    setTimeout(() => {
-      setResult({
-        ...res,
-        downloadUrl: `http://localhost:8080/${res.result}`,
-      });
-      setFile(null);
-      setFileName("");
-      setUrlInput("");
-      setProgress(100);
-    }, 300); // optional
-    setAlert({
-      open:true,
-      type:"success",
-      message:"Audio Converted Successfully!"
-    })
-  } catch (err) {
-    setAlert({
-      open:true,
-      type:"error",
-      message:"Something went wrong please try later :"
-    })
-    setError(err.message);
-    setUploading(false);
+    setUploading(true);
     setProcessing(false);
     setProgress(0);
-  }
-}
+    const systemAddress = getSystemAddress();
+    console.log("Below is system address : ");
+    console.log(systemAddress);
 
+    try {
+      const res = await uploadAudio({
+        file: mode === "upload" ? file : null,
+        url: mode === "url" ? urlInput : null,
+        preset,
+        systemAddress,
+        onProgress: (p) => {
+          setProgress(p);
+          if (p === 100) {
+            setUploading(false);
+            setProcessing(true);
+          }
+        },
+      });
+
+      console.log("Server Response  : in frontend : ");
+      console.log(res);
+
+      // Upload finished → show processing loader
+      setProcessing(false);
+
+      // simulate small delay if needed
+      setTimeout(() => {
+        setResult({
+          ...res,
+          downloadUrl: res.url,
+        });
+        setFile(null);
+        setFileName("");
+        setUrlInput("");
+        setProgress(100);
+      }, 300); // optional
+      setAlert({
+        open: true,
+        type: "success",
+        message: "Audio Converted Successfully!",
+      });
+    } catch (err) {
+      setAlert({
+        open: true,
+        type: "error",
+        message: "Something went wrong please try later :",
+      });
+      setError(err.message);
+      setUploading(false);
+      setProcessing(false);
+      setProgress(0);
+    }
+  }
+
+  const testFun = async () => {
+    console.log("Test Function Called : ");
+    try {
+      let res = await fetch("http://localhost:8080/testapi");
+      let data = await res.blob();
+      let downloadUrl = URL.createObjectURL(data);
+      setResult({
+        ...res,
+        downloadUrl: downloadUrl,
+      });
+      setAlert({
+        open: true,
+        type: "success",
+        message: "Audio Converted Successfully!",
+      });
+    } catch (err) {
+      console.error("Some Error : ", err);
+      setAlert({
+        open: true,
+        type: "error",
+        message: "Something went wrong please try later :",
+      });
+    }
+  };
+
+  const sendFeedback = async ({ name, rating, message, audioType }) => {
+    console.log("Send Feedback function call from client side :");
+    try {
+      const res = await fetch("http://localhost:8080/api/email/feedback", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name, rating, message, audioType }),
+      });
+
+      let data = await res.json();
+      if (data.success) {
+        setAlert({
+          open: true,
+          type: "success",
+          message: data.message || "Feedback Submitted Successfully!",
+        });
+        return data;
+      } else {
+        setAlert({
+          open: true,
+          type: "error",
+          message: data.message || "Feedback was not submitted!",
+        });
+      }
+    } catch (err) {
+      setAlert({
+        open: true,
+        type: "error",
+        message: "Something went wrong please try later :",
+      });
+      console.error(err);
+    }
+  };
 
   function clearSelection() {
     setFile(null);
@@ -234,16 +264,31 @@ export default function Hero() {
     setError("");
   }
 
-
   return (
-    <section id="Home" className="HeroSection px-5 w-full min-h-screen bg-gradient-to-br from-black via-[#061020] to-[#0b1220] text-white flex items-center pt-20">
+    <section
+      id="Home"
+      className="HeroSection px-5 w-full min-h-screen bg-gradient-to-br from-black via-[#061020] to-[#0b1220] text-white flex items-center pt-20   "
+    >
       <div className="w-full max-w-screen-2xl mx-auto px-6 ">
         <div className="grid grid-cols-1 md:grid-cols-12 gap-8 items-center">
           {/* LEFT: Heading */}
           <div className="md:col-span-7">
-            <h2 className="text-xl text-[#9CA3AF] mb-4">BeatMagic</h2>
+            <h2
+              data-aos="fade-up"
+              data-aos-duration="1000"
+              data-aos-delay="800"
+              data-aos-offset="0"
+              className="text-xl text-[#9CA3AF] mb-4"
+            >
+              BeatMagic
+            </h2>
 
-            <h1 className="text-4xl md:text-6xl font-extrabold leading-tight">
+            <h1
+              data-aos="fade-down"
+              data-aos-duration="1000"
+              data-aos-delay="0"
+              className="text-4xl md:text-6xl font-extrabold leading-tight"
+            >
               Transform your music into <br />
               <span className="text-white">3D • 8D • </span>
               <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#7dd3fc] to-[#8b5cf6]">
@@ -251,7 +296,12 @@ export default function Hero() {
               </span>
             </h1>
 
-            <p className="mt-6 text-gray-300 max-w-xl">
+            <p
+              data-aos="fade-right"
+              data-aos-duration="1000"
+              data-aos-delay="0"
+              className="mt-6 text-gray-300 max-w-xl"
+            >
               Upload a track or paste a YouTube link to convert it into an
               immersive 3D / 8D / 16D experience — right in your browser. No
               login. Fast processing. MP3 export included.
@@ -259,17 +309,29 @@ export default function Hero() {
 
             {/* small features row */}
             <div className="mt-8 grid grid-cols-2 sm:grid-cols-3 gap-4 max-w-lg">
-              <div className="p-3 bg-white/5 rounded-lg">
+              <div
+                data-aos="fade-right"
+                data-aos-duration="1500"
+                className="p-3 bg-white/5 rounded-lg"
+              >
                 <div className="text-sm font-semibold">Stem Separation</div>
                 <div className="text-xs text-gray-400">
                   Vocals / Instruments
                 </div>
               </div>
-              <div className="p-3 bg-white/5 rounded-lg">
+              <div
+                data-aos="fade-right"
+                data-aos-duration="1000"
+                className="p-3 bg-white/5 rounded-lg"
+              >
                 <div className="text-sm font-semibold">Natural Rotation</div>
                 <div className="text-xs text-gray-400">Behavioral engine</div>
               </div>
-              <div className="p-3 bg-white/5 rounded-lg">
+              <div
+                data-aos="fade-right"
+                data-aos-duration="500"
+                className="p-3 bg-white/5 rounded-lg"
+              >
                 <div className="text-sm font-semibold">Export</div>
                 <div className="text-xs text-gray-400">MP3 / WAV</div>
               </div>
@@ -277,7 +339,12 @@ export default function Hero() {
           </div>
 
           {/* RIGHT: Upload box */}
-          <div className="md:col-span-5">
+          <div
+            data-aos="fade-down"
+            data-aos-duration="800"
+            data-aos-delay="0"
+            className="md:col-span-5 mb-4"
+          >
             <div className="bg-white/5 border border-white/10 rounded-2xl p-6 shadow-xl">
               {/* Mode toggle */}
               <div className="flex items-center justify-between mb-4">
@@ -306,7 +373,7 @@ export default function Hero() {
 
                 {/* Preset selector */}
                 <div className="flex items-center space-x-2">
-                  <label className="text-xs text-gray-400">Preset</label>
+                  <label className="text-xs text-gray-400">Effects</label>
                   <select
                     value={preset}
                     onChange={(e) => setPreset(e.target.value)}
@@ -424,17 +491,9 @@ export default function Hero() {
 
               {/* Convert button + Progress */}
               <div className="mt-6 flex flex-col space-y-3">
-                {/* <button
-                  onClick={handleConvert}
-                  // onClick={testFun}
-                  disabled={uploading}
-                  className={`w-full px-4 py-3 rounded-xl bg-gradient-to-r from-[#7dd3fc] to-[#8b5cf6] text-black font-semibold hover:opacity-95 disabled:opacity-50  `}
-                >
-                  {uploading ? `Uploading... ${progress}%` : "Convert Now"}
-                </button> */}
-
                 <button
                   onClick={handleConvert}
+                  // onClick={testFun}
                   disabled={uploading || processing}
                   className={`w-full px-4 py-3 rounded-xl 
                          bg-gradient-to-r from-[#7dd3fc] to-[#8b5cf6]
@@ -446,7 +505,7 @@ export default function Hero() {
                   ) : processing ? (
                     <div className="flex items-center justify-center w-full gap-3">
                       <Loader />
-                      <span className="text-white" >Processing...</span>
+                      <span className="text-white">Processing...</span>
                     </div>
                   ) : (
                     "Convert Now"
@@ -476,6 +535,48 @@ export default function Hero() {
         {result && (
           <>
             {/* AudioBox */}
+            {/* Feedback Message Box */}
+            {showPopup && (
+              <div
+                className="fixed bottom-[120px] left-1/2 -translate-x-1/2 w-[90%] max-w-md 
+                  bg-white/10 backdrop-blur-xl border border-white/20 
+                  text-white p-4 rounded-xl shadow-lg z-[60] animate-fade-in"
+              >
+                <div className="flex items-center justify-between">
+                  <h3 className="font-semibold text-lg">
+                    How was your result?
+                  </h3>
+
+                  <button
+                    onClick={() => setShowFeedbackBox(false)}
+                    className="text-gray-300 hover:text-white text-xl cursor-pointer"
+                  >
+                    <X className="w-5 h-5" />
+                  </button>
+                </div>
+
+                <p className="text-sm text-gray-300 mt-1">
+                  Your feedback helps us improve the audio processing quality.
+                </p>
+
+                <button
+                  onClick={() => setShowFeedback(true)}
+                  className="mt-4 w-full bg-[#7dd3fc] text-black py-2 rounded-lg font-semibold 
+                 hover:bg-[#6ac8ea] cursor-pointer"
+                >
+                  Give Feedback
+                </button>
+              </div>
+            )}
+
+            {showFeedback && (
+              <>
+                <FeedbackPopup
+                  onClose={() => setShowFeedback(false)}
+                  onSubmit={sendFeedback}
+                />
+              </>
+            )}
 
             {visibleOutput && (
               <div className="fixed bottom-0 left-0 w-full bg-[#0d1117] border-t border-white/10 p-4 shadow-xl z-50 animate-slide-up  ">
@@ -519,6 +620,7 @@ export default function Hero() {
                             title: "Processed Audio",
                             url: result.downloadUrl,
                           });
+                          console.log(result.downloadUrl);
                         } else {
                           navigator.clipboard.writeText(result.downloadUrl);
                           alert("Link copied!");
@@ -534,19 +636,36 @@ export default function Hero() {
             )}
             {/* Floatting Button  */}
             {!visibleOutput && (
-              <button
-                onClick={() => setVisibleOutput(true)}
-                className=" flex items-center gap-2 fixed bottom-5 right-5 cursor-pointer bg-[#121e30] text-white px-4 py-2 rounded-xl shadow-lg font-semibold z-50 hover:bg-[#0d1622] transition-all duration-300 active:scale-95"
-              >
-                <Headphones size={32} className="text-[#ea1fea]" />
-                <span>Play Audio</span>
-              </button>
+              <>
+                <div className="tooltipMessageBox fixed bottom-20 right-5 z-[60]">
+                  {/* Tooltip */}
+                  <div className="customTooltip animate-float">
+                    Here is your converted music
+                  </div>
+
+                  {/* Play Audio Button */}
+                  <button
+                    onClick={() => setVisibleOutput(true)}
+                    className="flex items-center gap-2 cursor-pointer bg-[#121e30] text-white 
+        px-4 py-2 rounded-xl shadow-lg font-semibold hover:bg-[#0d1622] 
+        transition-all duration-300 active:scale-95"
+                  >
+                    <Headphones size={32} className="text-[#ea1fea]" />
+                    <span>Play Audio</span>
+                  </button>
+                </div>
+              </>
             )}
           </>
         )}
       </div>
 
-      <AlertMessage open={alert.open} type={alert.type} message={alert.message}  onClose={()=> setAlert({...alert,open:false})} />
+      <AlertMessage
+        open={alert.open}
+        type={alert.type}
+        message={alert.message}
+        onClose={() => setAlert({ ...alert, open: false })}
+      />
     </section>
   );
 }

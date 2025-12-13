@@ -29,7 +29,7 @@ export default function Showcase() {
         </div>
 
         <p className="text-gray-400 mt-6 text-sm">
-          *Waveform visual reacts dynamically (demo animation).
+          *Waveform visual reacts dynamically.
         </p>
       </div>
     </div>

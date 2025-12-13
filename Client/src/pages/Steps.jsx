@@ -1,4 +1,3 @@
-// Steps.jsx
 import { Upload, Settings, Download } from "lucide-react";
 
 export default function Steps() {
@@ -20,11 +19,9 @@ export default function Steps() {
     },
   ];
 
-
   return (
     <section className="px-5 w-full py-24 bg-gradient-to-b from-[#050b14] to-[#081020] text-white">
       <div className="max-w-screen-2xl mx-auto px-6">
-
         <h2 className="text-center text-3xl md:text-4xl font-bold mb-16">
           How It <span className="text-purple-400">Works</span>
         </h2>
@@ -41,9 +38,7 @@ export default function Steps() {
             </div>
           ))}
         </div>
-
       </div>
     </section>
   );
-
 }

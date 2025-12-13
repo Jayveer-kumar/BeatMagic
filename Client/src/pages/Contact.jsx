@@ -1,6 +1,8 @@
 import { useState } from "react"
 import AlertMessage from "../components/Alert";
 import EmailSenderLoader from "../components/EmailSenderLoader";
+import LanguageIcon from '@mui/icons-material/Language';
+import EmailIcon from '@mui/icons-material/Email';
 export default function Contact(){
   let initialFormData = {
     name:"",
@@ -100,7 +102,7 @@ export default function Contact(){
           <div>
             <h2 className="text-4xl md:text-5xl font-extrabold leading-tight mb-6">
               Have a Question?
-              <span className="block text-[#4f9cff]">We’re Here to Help.</span>
+              <span className="block text-[#4f9cff]">We're Here to Help.</span>
             </h2>
 
             <p className="text-gray-300 mb-12 max-w-md">
@@ -110,11 +112,15 @@ export default function Contact(){
 
             <div className="space-y-4 text-gray-300">
               <p className="flex items-center gap-3">
-                <span className="text-[#4f9cff] text-xl">📧</span>
+                <span className="text-[#4f9cff] text-xl">
+                  <EmailIcon />
+                </span>
                 Jayveerk394@gmail.com
               </p>
               <p className="flex items-center gap-3">
-                <span className="text-[#4f9cff] text-xl">🌐</span>
+                <span className="text-[#4f9cff] text-xl">
+                  <LanguageIcon />
+                </span>
                 www.BeatMagic.com
               </p>
             </div>

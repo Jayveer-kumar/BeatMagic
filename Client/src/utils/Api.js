@@ -1,5 +1,5 @@
 const API_BASE = "http://localhost:8080"; 
-export function uploadAudio({ file, url, preset = "8d", onProgress }) {
+export function uploadAudio({ file, url, preset = "8d" , systemAddress, onProgress }) {
   return new Promise((resolve, reject) => {
     const xhr = new XMLHttpRequest();
 
@@ -11,6 +11,7 @@ export function uploadAudio({ file, url, preset = "8d", onProgress }) {
     if (file) form.append("audio", file);
     if (url) form.append("url", url);
     form.append("effect", preset);
+    form.append("systemAddress",systemAddress)
 
     xhr.open("POST", API_BASE+endpoint, true);
 

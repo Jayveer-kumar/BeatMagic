@@ -1,4 +1,3 @@
-// Features.jsx
 import { Sparkles, Radio, Headphones, Zap } from "lucide-react";
 
 export default function Features() {

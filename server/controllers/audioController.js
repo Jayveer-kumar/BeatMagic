@@ -1,48 +1,108 @@
-const youtubeService = require("../services/youtubeService");
-const pythonService = require("../services/pythonService");
+import Audio from "../models/Audio.js";
+import downloadFromYoutube from "../services/youtubeService.js";
+import runPython from "../services/pythonService.js";
+import { uploadToCloud, deleteFromCloud } from "../services/cloudService.js";
+import fs from "fs";
+import CloudCleanup from "../models/CloudCleanup.js";
 
-exports.processUploaded = async (req, res) => {
-  console.log("Processing uploaded file : ");
-  const effect = req.body.effect;
-  const inputPath = req.file.path;
-  if(!inputPath){
-    return res.status(400).json({ success:false, error: "No file uploaded" });
-  }
-  if(!effect){
-    return res.status(400).json({ success:false, error: "No effect specified" });
-  }
+export const processUploaded = async (req, res) => {
+  console.log("Request Recived for Converting song to 8d by uploading song :  ");
+  
+  const { effect, systemAddress } = req.body;
+  const buffer = req.file?.buffer; // <-- Yaha buffer milega
+
+  if (!buffer) return res.status(400).json({ error: "No file uploaded" });
+  if (!effect) return res.status(400).json({ error: "No effect provided" });
+  if (!systemAddress) return res.status(400).json({ error: "No systemAddress provided" });
 
   try {
-    const output = await pythonService.runPython(inputPath, effect);
-    return res.json({ success: true, result: output });
+    // OLD DATA DELETE
+    const old = await Audio.findOne({ systemAddress });
+
+    if (old?.cloudPublicId) await deleteFromCloud(old.cloudPublicId);
+    await Audio.deleteMany({ systemAddress });
+
+    // PROCESS WITH PYTHON USING BUFFER
+    const outputBuffer = await runPython(buffer, effect);
+
+    // UPLOAD TO CLOUD
+    const upload = await uploadToCloud(outputBuffer);
+
+    //  CLOUD CLEANUP ENTRY
+    await CloudCleanup.create({
+      publicId: upload.publicId,
+    });
+
+    // SAVE DB
+    await Audio.create({
+      systemAddress,
+      audioUrl: upload.url,
+      cloudPublicId: upload.publicId,
+      expireAt: new Date(Date.now() + 30 * 60 * 1000),
+    });
+
+    return res.json({ success: true, url: upload.url });
   } catch (err) {
-    return res.status(500).json({ success: false, error: "Processing failed Please try later!" });
+    console.error(err);
+    return res.status(500).json({ error: "Processing failed" });
   }
 };
 
 
+export const processFromURL = async (req, res) => {
+  console.log("Request Recived for Converting song to 8d by url song :  ");
+  const { effect, url, systemAddress } = req.body;
 
-exports.processFromURL = async (req, res) => {
-  console.log("Processing from URL : ");
-  
-  const { effect, url } = req.body;
-  console.log("Effect : ", effect);
-  console.log("URL : ", url);
-  if (!url) {
-    return res.status(400).json({ error: "No URL provided" });
-  }
-  if (!effect) {
-    return res.status(400).json({ error: "No effect specified" });
-  }
+  if (!url) return res.status(400).json({ 
+    success : false,
+    message : "No URL Provided : "
+  });
+  if (!effect) return res.status(400).json({
+    success : false,
+    message : " No Effect Provided : "
+   });
+  if (!systemAddress) return res.status(400).json({
+    success: false,
+    message : "No System address Provided : "
+  });
+
   try {
-    const downloadedPath = await youtubeService.downloadFromYoutube(url);
-    console.log("Downloaded File Path : ",downloadedPath);
-    const output = await pythonService.runPython(downloadedPath, effect);
+    // OLD DATA DELETE
+    const old = await Audio.findOne({ systemAddress });
 
-    return res.json({ success: true, result: output });
+    if (old?.cloudPublicId) await deleteFromCloud(old.cloudPublicId);
+    await Audio.deleteMany({ systemAddress });
+
+    // DOWNLOAD FROM YOUTUBE
+    const rawBuffer   = await downloadFromYoutube(url); 
+
+    // PROCESS WITH PYTHON
+    const processedBuffer = await runPython(rawBuffer, effect);
+
+    // UPLOAD TO CLOUD
+    const upload = await uploadToCloud(processedBuffer);
+    console.log("Song is uploaded  to cloud success : see->");
+    console.log(upload);
+
+    //  CLOUD CLEANUP ENTRY
+    await CloudCleanup.create({
+      publicId: upload.publicId,
+    });
+
+    // SAVE DB
+    await Audio.create({
+      systemAddress,
+      audioUrl: upload.url,
+      cloudPublicId: upload.publicId,
+      expireAt: new Date(Date.now() + 30 * 60 * 1000),
+    });
+
+    console.log("Done Enjoy Your Music : ");
+
+    return res.json({ success: true, url: upload.url });
 
   } catch (err) {
-    console.log(err);
-    return res.status(500).json({ error: "YouTube download failed" });
+    console.error(err);
+    return res.status(500).json({ error: "Processing failed" });
   }
 };

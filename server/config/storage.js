@@ -1,19 +1,26 @@
-// const multer = require("multer");
-// const path = require("path");
-
+import { v2 as cloudinary } from "cloudinary";
+import { CloudinaryStorage } from "multer-storage-cloudinary";
 import multer from "multer";
-import path from "path";
+import dotenv from "dotenv";
+dotenv.config();
 
-const storage = multer.diskStorage({
-    destination: function (req, file, cb) {
-        cb(null, "uploads/"); // uploads folder
-    },
-    filename: function (req, file, cb) {
-        const ext = path.extname(file.originalname);
-        cb(null, Date.now() + ext);
-    }
+cloudinary.config({
+  cloud_name: process.env.CLOUD_NAME,
+  api_key: process.env.CLOUD_API_KEY,
+  api_secret: process.env.CLOUD_SECRET,
 });
 
-const upload = multer({ storage });
+const storage = new CloudinaryStorage({
+  cloudinary: cloudinary,
+  params: {
+    folder: "AudioBeat",
+    allowed_formats: ["mp3", "wav"],
+  },
+});
+
+// const upload = multer({ storage });
+const upload = multer({
+    storage : multer.memoryStorage()
+})
 
 export default upload;
