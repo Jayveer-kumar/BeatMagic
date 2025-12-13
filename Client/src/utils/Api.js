@@ -1,4 +1,4 @@
-const API_BASE = "http://localhost:8080"; 
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8080';
 export function uploadAudio({ file, url, preset = "8d" , systemAddress, onProgress }) {
   return new Promise((resolve, reject) => {
     const xhr = new XMLHttpRequest();
@@ -13,7 +13,7 @@ export function uploadAudio({ file, url, preset = "8d" , systemAddress, onProgre
     form.append("effect", preset);
     form.append("systemAddress",systemAddress)
 
-    xhr.open("POST", API_BASE+endpoint, true);
+    xhr.open("POST", API_URL+endpoint, true);
 
     xhr.upload.onprogress = function (e) {
       if (e.lengthComputable && typeof onProgress === "function") {

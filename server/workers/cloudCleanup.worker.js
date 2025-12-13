@@ -10,9 +10,6 @@ setInterval(async () => {
       createdAt: { $lte: new Date(Date.now() - 60 * 60 * 1000) } // for 1 hour
     });
 
-    console.log("Expired : Data : ");
-    console.log(expired);
-
     for (const item of expired) {
         console.log("Single Item : ");
         console.log(item);

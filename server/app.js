@@ -33,8 +33,17 @@ async function main() {
 
 main();
 
+// Vercel URL allow karo
+const corsOptions = {
+  origin: [
+    'http://localhost:5173',  // Local development
+    'http://localhost:3000',
+    'https://beatmagic.vercel.app/'
+  ],
+  credentials: true
+};
 
-app.use(cors());
+app.use(cors(corsOptions));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
