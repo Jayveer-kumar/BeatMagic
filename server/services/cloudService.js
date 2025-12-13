@@ -17,9 +17,7 @@ export const uploadToCloud = (buffer) => {
       {
         resource_type: "video",
         folder: "converted_audios",
-
-        // Auto Delete After 1 Hour
-        expires_at: Math.floor(Date.now() / 1000) + (60 * 60)
+        timeout: 10 * 60 * 1000,
       },
       (err, result) => {
         if (err) return reject(err);

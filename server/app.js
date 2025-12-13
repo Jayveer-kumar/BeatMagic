@@ -16,16 +16,23 @@ const __dirname = path.dirname(__filename);
 
 const PORT = process.env.PORT || 5000;
 const app = express();
+let atlasURL = process.env.ATLAS_URL; 
 
+const mongooseOptions = {
+  serverSelectionTimeoutMS: 30000,
+  socketTimeoutMS: 45000,
+  family: 4
+};
 
 main().then(res=>{
     console.log("Database Connected : ");
 }).catch(err=>{
     console.log("MongoDB Connection Error : Database was not connected :");
+    console.log(err);
 })
 
 async function main() {
-  await mongoose.connect('mongodb://127.0.0.1:27017/Beatmagic');
+  await mongoose.connect(atlasURL,mongooseOptions);
 }
 
 
@@ -75,9 +82,11 @@ app.get("/testapi",(req,res)=>{
     });
 })
 
-app.listen(PORT, () => {
+const server= app.listen(PORT, () => {
   console.log(`✔ Server running on port ${PORT}`);
 });
+
+server.setTimeout(15 * 60 * 1000);
 
 
 

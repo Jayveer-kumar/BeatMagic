@@ -144,8 +144,6 @@ export default function Hero() {
     setProcessing(false);
     setProgress(0);
     const systemAddress = getSystemAddress();
-    console.log("Below is system address : ");
-    console.log(systemAddress);
 
     try {
       const res = await uploadAudio({
