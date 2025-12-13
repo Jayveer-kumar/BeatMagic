@@ -2,6 +2,19 @@ import dotenv from "dotenv";
 dotenv.config();
 import express from "express";
 import cors from "cors";
+
+const corsOptions = {
+  origin: [
+    'http://localhost:5173',
+    'http://localhost:3000',
+    'https://beatmagic.vercel.app'
+  ],
+  methods: ["GET","POST"],
+  allowedHeaders: ["Content-Type"],
+  credentials: true
+};
+
+app.use(cors(corsOptions));
 import path from "path";
 import { fileURLToPath } from "url";
 import mongoose from "mongoose";
@@ -33,18 +46,7 @@ async function main() {
 
 main();
 
-const corsOptions = {
-  origin: [
-    'http://localhost:5173',
-    'http://localhost:3000',
-    'https://beatmagic.vercel.app'
-  ],
-  methods: ["GET","POST"],
-  allowedHeaders: ["Content-Type"],
-  credentials: true
-};
 
-app.use(cors(corsOptions));
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
