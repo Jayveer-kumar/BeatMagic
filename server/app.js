@@ -10,13 +10,12 @@ import mongoose from "mongoose";
 import audioRoutes from "./routes/audioRoutes.js";
 import emailRoutes from "./routes/emailRoute.js";
 import { applyEffect } from "./services/dspService.js";
-import "./workers/cloudCleanup.worker.js";
+
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 const PORT = process.env.PORT || 5000;
 const app = express();
-let atlasURL = process.env.ATLAS_URL; 
 
 const mongooseOptions = {
   serverSelectionTimeoutMS: 30000,
@@ -24,16 +23,20 @@ const mongooseOptions = {
   family: 4
 };
 
-main().then(res=>{
-    console.log("Database Connected : ");
-}).catch(err=>{
-    console.log("MongoDB Connection Error : Database was not connected :");
-    console.log(err);
-})
-
 async function main() {
-  await mongoose.connect(atlasURL,mongooseOptions);
+  try {
+    await mongoose.connect(process.env.ATLAS_URL,mongooseOptions);
+    console.log("Database Connected :");
+
+    // START CLEANUP WORKER AFTER DB CONNECT
+    import("./workers/cloudCleanup.js");
+
+  } catch (err) {
+    console.error("MongoDB Connection Error :", err);
+  }
 }
+
+main();
 
 
 app.use(cors());
