@@ -38,12 +38,9 @@ const downloadFromYoutube = (url) => {
     // ]);
 
     const process = spawn("yt-dlp", [
-      "-f",
-      "bestaudio",
-      "--audio-format",
-      "mp3",
-      "--extractor-args",
-      "youtube:player_client=default",
+      "-f","bestaudio",
+      "--audio-format","mp3",
+      "--extractor-args","youtube:player_client=android",
       "-o",
       "-",
       url,
