@@ -127,19 +127,16 @@ const PORT = process.env.PORT || 5000;
 const app = express();
 
 //  CORS Middleware FIRST 
-// const corsOptions = {
-//   origin: [
-//     'http://localhost:5173',
-//     'http://localhost:3000',
-//     'https://beatmagic.vercel.app'
-//   ],
-//   methods: ["GET","POST","OPTIONS"],
-//   allowedHeaders: ["Content-Type", "Authorization"],
-//   credentials: true
-// };
-// app.use(cors(corsOptions));
+const corsOptions = {
+  origin: "https://beatmagic.vercel.app",
+  methods: ["GET", "POST", "OPTIONS"],
+  allowedHeaders: ["Content-Type", "Authorization"],
+  credentials: true,
+};
 
-app.use(cors()); // For testing only
+app.use(cors(corsOptions));
+
+// app.use(cors()); // For testing only
 
 //  Body Parsers 
 app.use(express.json());
