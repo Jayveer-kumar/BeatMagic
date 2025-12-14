@@ -1,4 +1,4 @@
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8080';
+const API_URL = 'https://beatmagic.onrender.com/' || 'http://localhost:8080';
 console.log("Enviroment Variable : ");
 console.log(import.meta.env.VITE_API_URL);
 console.log("API URL : ");

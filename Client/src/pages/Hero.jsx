@@ -125,8 +125,7 @@ export default function Hero() {
   }
 
   async function handleConvert() {
-    console.log("Handle Convert Called : and here is : .env Variable : ");
-    console.log(import.meta.env.VITE_API_URL);
+    console.log("Handle Convert Called: ");
     setError("");
     setResult(null);
 
