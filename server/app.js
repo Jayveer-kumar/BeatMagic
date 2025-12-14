@@ -178,7 +178,7 @@ app.use((req, res, next) => {
 });
 
 app.get("/", (req, res) => {
-    res.status(200).send("Backend is running 🚀");
+    res.status(200).send("Backend is running");
 });
 
 
