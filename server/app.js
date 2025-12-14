@@ -177,9 +177,14 @@ app.use((req, res, next) => {
   next();
 });
 
+app.get("/", (req, res) => {
+    res.status(200).send("Backend is running 🚀");
+});
+
 
 app.use("/api/audio", audioRoutes);
 app.use("/api/email", emailRoutes);
+
 
 
 app.get("/testapi", (req, res) => {
