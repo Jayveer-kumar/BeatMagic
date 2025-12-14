@@ -1,4 +1,4 @@
-FROM node:22-slim
+FROM python:3.8-slim
 
 # -----------------------------
 # System dependencies
@@ -6,26 +6,16 @@ FROM node:22-slim
 RUN apt-get update && apt-get install -y \
     ffmpeg \
     curl \
-    python3.8 \
-    python3.8-distutils \
-    python3.8-venv \
+    nodejs \
+    npm \
     && rm -rf /var/lib/apt/lists/*
 
 # -----------------------------
-# Make Python 3.8 default
+# Python deps
 # -----------------------------
-RUN update-alternatives --install /usr/bin/python python /usr/bin/python3.8 1
-
-# -----------------------------
-# Install pip for Python 3.8
-# -----------------------------
-RUN curl -sS https://bootstrap.pypa.io/pip/3.8/get-pip.py | python
-
-# -----------------------------
-# Install yt-dlp (latest) + spleeter
-# -----------------------------
-RUN pip install --no-cache-dir -U yt-dlp \
-    && pip install --no-cache-dir spleeter==2.4.0
+RUN pip install --no-cache-dir \
+    yt-dlp \
+    spleeter==2.4.0
 
 # -----------------------------
 # App setup
