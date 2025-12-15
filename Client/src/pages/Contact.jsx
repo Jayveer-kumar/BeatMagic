@@ -56,7 +56,7 @@ export default function Contact(){
     if(validateForm()){
       try {
         setVisibleLoader(true);
-        let res = await fetch("http://localhost:8080/api/email/sendEmail", {
+        let res = await fetch("https://beatmagic.onrender.com/api/email/sendEmail", {
           method: "POST",
           headers: {
             "Content-Type": "application/json",

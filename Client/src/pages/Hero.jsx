@@ -224,7 +224,7 @@ export default function Hero() {
   const sendFeedback = async ({ name, rating, message, audioType }) => {
     console.log("Send Feedback function call from client side :");
     try {
-      const res = await fetch("http://localhost:8080/api/email/feedback", {
+      const res = await fetch("https://beatmagic.onrender.com/api/email/feedback", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ name, rating, message, audioType }),
