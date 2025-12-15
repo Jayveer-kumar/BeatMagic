@@ -170,6 +170,9 @@ export default function Hero() {
         },
       });
 
+      console.log("Here is handleConvert function First Response  : ");
+      console.log(res);
+
       setJobId(res.jobId);
 
       // Upload finished → show processing loader
