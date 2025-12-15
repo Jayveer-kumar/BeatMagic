@@ -40,8 +40,12 @@ RUN pip install --no-cache-dir \
     pydub
 
 
-# PRE-DOWNLOAD SPLEETER MODEL
-RUN spleeter separate -p spleeter:2stems -o /tmp /usr/share/sounds/alsa/Front_Center.wav || true
+#  FORCE MODEL DOWNLOAD AT BUILD TIME
+RUN python - <<EOF
+from spleeter.separator import Separator
+Separator('spleeter:2stems')
+print("Spleeter model cached")
+EOF
 
 # ---------------- APP ----------------
 WORKDIR /app
