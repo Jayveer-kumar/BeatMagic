@@ -18,10 +18,9 @@
 
 # CMD ["node", "app.js"]
 
-
 FROM python:3.9-slim
 
-# ---------------- SYSTEM DEPENDENCIES ----------------
+# ---------------- SYSTEM DEPS ----------------
 RUN apt-get update && apt-get install -y \
     ffmpeg \
     nodejs \
@@ -30,17 +29,17 @@ RUN apt-get update && apt-get install -y \
     libsndfile1 \
     && rm -rf /var/lib/apt/lists/*
 
-# ---------------- PYTHON DEPENDENCIES ----------------
+# ---------------- PYTHON DEPS ----------------
 RUN pip install --no-cache-dir \
+    numpy<2 \
     yt-dlp \
     spleeter==2.4.0 \
-    numpy \
     soundfile \
     librosa \
     scipy \
     pydub
 
-# ---------------- APP SETUP ----------------
+# ---------------- APP ----------------
 WORKDIR /app
 
 COPY package*.json ./
