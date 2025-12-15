@@ -31,7 +31,7 @@ RUN apt-get update && apt-get install -y \
 
 # ---------------- PYTHON DEPS ----------------
 RUN pip install --no-cache-dir \
-    numpy<2 \
+    "numpy<2" \
     yt-dlp \
     spleeter==2.4.0 \
     soundfile \
