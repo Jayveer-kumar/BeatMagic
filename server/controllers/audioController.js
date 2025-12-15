@@ -4,16 +4,43 @@ import runPython from "../services/pythonService.js";
 import { uploadToCloud, deleteFromCloud } from "../services/cloudService.js";
 import fs from "fs";
 import CloudCleanup from "../models/CloudCleanup.js";
+import { jobs } from "../Jobs/jobStore.js";
+import { startAudioJob } from "../Jobs/audioWorker.js";
+import { randomUUID } from "crypto";
+
 
 export const processUploaded = async (req, res) => {
   console.log("Request Recived for Converting song to 8d by uploading song :  ");
   
   const { effect, systemAddress } = req.body;
-  const buffer = req.file?.buffer; // <-- Yaha buffer milega
+  const buffer = req.file?.buffer; // <-- Yaha buffer milega 
 
   if (!buffer) return res.status(400).json({ error: "No file uploaded" });
   if (!effect) return res.status(400).json({ error: "No effect provided" });
   if (!systemAddress) return res.status(400).json({ error: "No systemAddress provided" });
+
+  const jobId = randomUUID();
+
+  jobs.set(jobId,{
+    status : "Pending",
+    progress : 0,
+    url : null,
+    error : null
+  })
+  
+  console.log("Job is seted : ");
+  // Background Work
+  startAudioJob({
+    jobId,
+    buffer,
+    effect,
+    systemAddress
+  })
+
+  return res.json({
+    success : true,
+    jobId
+  })
 
   try {
     // OLD DATA DELETE
@@ -105,4 +132,20 @@ export const processFromURL = async (req, res) => {
     console.error(err);
     return res.status(500).json({ error: "Processing failed" });
   }
+};
+
+export const jobStatus = async (req,res) =>{
+  console.log("Request Recieved for Job status : ");
+  const job = jobs.get(req.params.jobId);
+  if(!job){
+    return res.status(404).json({success : false , message : `No any audio found for this ${req.params.jobId} job `});
+  }
+
+  return res.json({
+    sucess: true,
+    status : job.status,
+    progress : job.progress,
+    url : job.url,
+    error : job.error
+  });
 };

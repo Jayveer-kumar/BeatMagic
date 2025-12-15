@@ -1,0 +1,65 @@
+import { jobs } from "./jobStore.js";
+import runPython from "../services/pythonService.js";
+import { uploadToCloud , deleteFromCloud } from "../services/cloudService.js";
+import Audio from "../models/Audio.js";
+import CloudCleanup from "../models/CloudCleanup.js";
+
+
+export const startAudioJob = async ({
+  jobId,
+  buffer,
+  effect,
+  systemAddress
+}) => {
+  console.log("Start Audio job function is called : ");  
+  const job = jobs.get(jobId);
+  if (!job) return;
+
+  try {
+    job.status = "processing";
+    job.progress = 10;
+
+    // OLD DATA DELETE
+    const old = await Audio.findOne({ systemAddress });
+    if (old?.cloudPublicId) {
+        let del = await deleteFromCloud(old.cloudPublicId);
+        console.log("Old Song is Deleted from Cloud : See Below ");
+        console.log(del);
+    }
+    await Audio.deleteMany({ systemAddress });
+
+    job.progress = 30;
+
+    //  HEAVY PART (same as before)
+    const outputBuffer = await runPython(buffer, effect);
+    console.log("Song is converted successfully  : ");
+    job.progress = 70;
+
+    //  CLOUD UPLOAD
+    const upload = await uploadToCloud(outputBuffer);
+    console.log("Song is uploaded to cloud Successfully : See ");
+    console.log(upload);
+    job.progress = 90;
+
+    await CloudCleanup.create({
+      publicId: upload.publicId
+    });
+
+    await Audio.create({
+      systemAddress,
+      audioUrl: upload.url,
+      cloudPublicId: upload.publicId,
+      expireAt: new Date(Date.now() + 30 * 60 * 1000),
+    });
+
+    job.status = "done";
+    job.progress = 100;
+    job.url = upload.url;
+    console.log("Job is completed with progress 100 and with audio url see : ");
+
+    console.log(job);
+  } catch (err) {
+    job.status = "error";
+    job.error = err.message;
+  }
+};
