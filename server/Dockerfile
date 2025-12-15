@@ -39,6 +39,10 @@ RUN pip install --no-cache-dir \
     scipy \
     pydub
 
+
+# PRE-DOWNLOAD SPLEETER MODEL
+RUN spleeter separate -p spleeter:2stems -o /tmp /usr/share/sounds/alsa/Front_Center.wav || true
+
 # ---------------- APP ----------------
 WORKDIR /app
 
