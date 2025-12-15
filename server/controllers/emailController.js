@@ -1,6 +1,7 @@
 import nodemailer from 'nodemailer';
 import Feedback from '../models/Feedback.js';
 import useragent from 'useragent';
+import { Resend } from 'resend';
 
 // Contact Form Email
 export const sendEmail = async (req, res) => {
@@ -25,21 +26,15 @@ export const sendEmail = async (req, res) => {
             });
         }
 
-        // Nodemailer transporter setup
-        const transporter = nodemailer.createTransport({
-            service: 'gmail', // Ya koi bhi email service (gmail, outlook, etc.)
-            auth: {
-                user: process.env.EMAIL_USER, // Tumhara email
-                pass: process.env.EMAIL_PASS  // App password (not regular password)
-            }
-        });
-
-        // Email options
-        const mailOptions = {
-            from: process.env.EMAIL_USER,
-            to: process.env.EMAIL_USER, 
-            replyTo:email,
-            subject: `New Contact Form Message from ${name}`,
+        // Resend Email Configration
+        const resend = new Resend(process.env.RESEND_API_KEY);
+        
+        // Send Email Using Resend
+        await resend.emails.send({
+            from : 'Beatmagic <onboarding@resend.dev>',
+            to : [process.env.RESEND_API_KEY],
+            replyTo : email,
+            subject : `New Contact Form Message from ${name}`,
             html: `
                 <div style="font-family: Arial, sans-serif; padding: 20px; background-color: #f4f4f4;">
                     <div style="max-width: 600px; margin: 0 auto; background-color: white; padding: 30px; border-radius: 10px;">
@@ -64,10 +59,7 @@ export const sendEmail = async (req, res) => {
                     </div>
                 </div>
             `
-        };
-
-        // Send Email
-        await transporter.sendMail(mailOptions);
+        })
 
         return res.status(200).json({
             success: true,
