@@ -32,7 +32,7 @@ export const sendEmail = async (req, res) => {
         // Send Email Using Resend
         await resend.emails.send({
             from : 'Beatmagic <onboarding@resend.dev>',
-            to : [process.env.RESEND_API_KEY],
+            to : [process.env.EMAIL_USER],
             replyTo : email,
             subject : `New Contact Form Message from ${name}`,
             html: `
