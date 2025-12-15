@@ -37,6 +37,7 @@ export default function Hero() {
   const [processing, setProcessing] = useState(false);
   const [result, setResult] = useState(null);
   const [error, setError] = useState("");
+  const [ jobId , setJobId ] = useState(null);
   const [visibleOutput, setVisibleOutput] = useState(true);
   const showPopup = showFeedbackBox && visibleOutput;
 
@@ -77,6 +78,14 @@ export default function Hero() {
     const newUrl = `${window.location.pathname}?${q.toString()}`;
     window.history.pushState({}, "", newUrl);
   }, [mode]);
+
+  useEffect(()=>{
+    if(!processing) return;
+    const interval = setInterval(()=>{
+      getJobStatus();
+    },2000);
+    return () => clearInterval(interval);
+  },[processing]);
 
   // drag & drop handlers
   function handleDrop(e) {
@@ -161,40 +170,64 @@ export default function Hero() {
         },
       });
 
-      console.log("Server Response  : in frontend : ");
-      console.log(res);
+      setJobId(res.jobId);
 
       // Upload finished → show processing loader
-      setProcessing(false);
+      // setProcessing(false);
 
       // simulate small delay if needed
-      setTimeout(() => {
-        setResult({
-          ...res,
-          downloadUrl: res.url,
-        });
-        setFile(null);
-        setFileName("");
-        setUrlInput("");
-        setProgress(100);
-      }, 300); // optional
-      setAlert({
-        open: true,
-        type: "success",
-        message: "Audio Converted Successfully!",
-      });
+
+      // setTimeout(() => {
+      //   setResult({
+      //     ...res,
+      //     downloadUrl: res.url,
+      //   });
+      //   setFile(null);
+      //   setFileName("");
+      //   setUrlInput("");
+      //   setProgress(100);
+      // }, 300); // optional
+      // setAlert({
+      //   open: true,
+      //   type: "success",
+      //   message: "Audio Converted Successfully!",
+      // });
+
     } catch (err) {
-      setAlert({
-        open: true,
-        type: "error",
-        message: "Something went wrong please try later :",
-      });
+      // setAlert({
+      //   open: true,
+      //   type: "error",
+      //   message: "Something went wrong please try later :",
+      // });
       setError(err.message);
       setUploading(false);
       setProcessing(false);
       setProgress(0);
     }
   }
+
+  async function getJobStatus() {
+    console.log("Get Job status Function Called : ");
+    let res = await fetch(`https://beatmagic.vercel.app/api/audio/job-status/${jobId}`);
+    let data = await res.json();
+    console.log(data);
+    if(data.status === "done"){
+      setProcessing(false);
+      setFile(null);
+      setUrlInput("");
+      setFileName("");
+      setResult({
+        ...data,
+        downloadUrl : data.url
+      })
+    }
+    if (data.status === "error") {
+    setProcessing(false);
+    setError(data.error);
+    }
+  }
+
+
 
   const testFun = async () => {
     console.log("Test Function Called : ");
