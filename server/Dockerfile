@@ -40,6 +40,8 @@ RUN pip install --no-cache-dir \
     pydub
 
 
+ENV NVIDIA_VISIBLE_DEVICES="none"    
+
 #  FORCE MODEL DOWNLOAD AT BUILD TIME
 RUN python - <<EOF
 from spleeter.separator import Separator
