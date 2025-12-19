@@ -5,10 +5,15 @@ const CloudCleanupSchema = new mongoose.Schema({
     type: String,
     required: true
   },
+  // Cleanup kab allowed hai
+  safeAfter :{
+    type : Date,
+    required : true
+  },
   createdAt: {
     type: Date,
     default: Date.now,
-    expires: 60 * 60 // 1 HOUR AUTO DELETE (TESTING: 5 * 60)
+    expires: 24 * 60 * 60 // 1 HOUR AUTO DELETE (TESTING: 60 * 60)
   }
 });
 

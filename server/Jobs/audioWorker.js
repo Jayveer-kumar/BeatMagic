@@ -42,7 +42,8 @@ export const startAudioJob = async ({
     job.progress = 90;
 
     await CloudCleanup.create({
-      publicId: upload.publicId
+      publicId: upload.publicId,
+      safeAfter : new Date(Date.now() + 30 * 60 * 1000) // 30 minutes
     });
 
     await Audio.create({
