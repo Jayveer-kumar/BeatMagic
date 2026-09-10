@@ -29,7 +29,7 @@ ENV PATH="/opt/venv/bin:$PATH"
 # Ensure pip is up to date inside venv
 RUN pip install --no-cache-dir --upgrade pip setuptools wheel
 
-# ---------------- PYTHON DEPS (Updated Spleeter version for Python 3.11+) ----------------
+# ---------------- PYTHON DEPS (Spleeter 2.4.2 for Python 3.11+) ----------------
 RUN pip install --no-cache-dir \
     "numpy<2" \
     yt-dlp \
@@ -41,7 +41,7 @@ RUN pip install --no-cache-dir \
 
 ENV NVIDIA_VISIBLE_DEVICES="none"    
 
-# ---- FORCE MODEL DOWNLOAD AT BUILD TIME (Uses updated model instantiation if needed) ----
+# ---- FORCE MODEL DOWNLOAD AT BUILD TIME ----
 RUN python3 - <<EOF
 from spleeter.separator import Separator
 Separator('spleeter:2stems')
@@ -63,6 +63,7 @@ ENV NODE_ENV=production
 EXPOSE 8080
 
 CMD ["node", "app.js"]
+
 
 
 
