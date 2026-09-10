@@ -1,50 +1,50 @@
-# FROM python:3.9-slim
+# ---- BeatMagic server image ----
+# Node.js backend + Python audio engine + ffmpeg + yt-dlp + deno, all pinned in one place.
+FROM node:20-bookworm-slim
 
-# RUN apt-get update && apt-get install -y \
-#     ffmpeg \
-#     nodejs \
-#     npm \
-#     curl \
-#     && rm -rf /var/lib/apt/lists/*
-
-# RUN pip install --no-cache-dir \
-#     yt-dlp \
-#     spleeter==2.4.0
-
-# WORKDIR /app
-# COPY package*.json ./
-# RUN npm install --legacy-peer-deps
-# COPY . .
-
-# CMD ["node", "app.js"]
-
-FROM python:3.9-slim
-
-# ---------------- SYSTEM DEPS ----------------
-RUN apt-get update && apt-get install -y \
+# ---- System dependencies ----
+# python3/pip        -> runs process_audio.py
+# ffmpeg             -> used by fluent-ffmpeg AND by pydub's AudioSegment internally
+# libsndfile1        -> required by soundfile (librosa depends on it)
+# build-essential     -> some python audio packages compile native code on install
+# curl               -> needed to install deno
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    python3 \
+    python3-pip \
+    python3-venv \
     ffmpeg \
-    nodejs \
-    npm \
-    curl \
     libsndfile1 \
+    build-essential \
+    curl \
+    ca-certificates \
+    unzip \
     && rm -rf /var/lib/apt/lists/*
 
-# ---------------- PYTHON DEPS ----------------
-RUN pip install --no-cache-dir \
-    "numpy<2" \
-    yt-dlp \
-    spleeter==2.4.0 \
-    soundfile \
-    librosa \
-    scipy \
-    pydub
+# ---- Deno (yt-dlp needs a JS runtime to solve YouTube's challenge) ----
+RUN curl -fsSL https://deno.land/install.sh | sh
+ENV DENO_INSTALL="/root/.deno"
+ENV PATH="$DENO_INSTALL/bin:$PATH"
 
-# ---------------- APP ----------------
 WORKDIR /app
 
-COPY package*.json ./
-RUN npm install --legacy-peer-deps
+# ---- Python deps (isolated venv, exact pinned versions) ----
+COPY audioEngine/requirements.txt ./audioEngine/requirements.txt
+RUN python3 -m venv /opt/venv
+ENV PATH="/opt/venv/bin:$PATH"
+RUN pip install --no-cache-dir -r audioEngine/requirements.txt
 
+# yt-dlp pinned separately so you control exactly when it updates
+# RUN pip install --no-cache-dir yt-dlp==2026.09.03
+RUN pip install --no-cache-dir yt-dlp
+
+# ---- Node deps ----
+COPY package*.json ./
+RUN npm ci --omit=dev --legacy-peer-deps
+
+# ---- App code ----
 COPY . .
+
+ENV NODE_ENV=production
+EXPOSE 8080
 
 CMD ["node", "app.js"]

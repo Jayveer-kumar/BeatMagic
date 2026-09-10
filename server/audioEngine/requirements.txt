@@ -1,0 +1,14 @@
+# IMPORTANT: replace these with the exact versions you tested locally.
+# Run `pip freeze` inside your working local venv and paste the real numbers here —
+# these are reasonable defaults, not guaranteed to match what you already tested with.
+
+numpy==1.26.4
+soundfile==0.12.1
+librosa==0.10.2.post1
+scipy==1.13.1
+pydub==0.25.1
+pyloudnorm==0.1.1
+
+# spleeter is heavy (pulls in tensorflow) and your code already wraps its import
+# in a try/except — only add it here if you actually use vocal/instrument separation.
+# spleeter==2.4.0
