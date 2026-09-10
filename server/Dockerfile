@@ -49,7 +49,7 @@ ENV PATH="$DENO_INSTALL/bin:$PATH"
 WORKDIR /app
 
 # ---- Python deps (isolated venv, exact pinned versions) ----
-COPY audioEngine/requirements.txt ./audioEngine/requirements.txt
+COPY server/audioEngine/requirements.txt ./audioEngine/requirements.txt
 RUN python3 -m venv /opt/venv
 ENV PATH="/opt/venv/bin:$PATH"
 RUN pip install --no-cache-dir -r audioEngine/requirements.txt
@@ -59,7 +59,7 @@ RUN pip install --no-cache-dir -r audioEngine/requirements.txt
 RUN pip install --no-cache-dir yt-dlp
 
 # ---- Node deps ----
-COPY package*.json ./
+COPY server/package*.json ./
 RUN npm ci --omit=dev --legacy-peer-deps
 
 # ---- App code ----
