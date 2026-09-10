@@ -1,5 +1,5 @@
 // const API_URL = 'https://beatmagic.onrender.com' || 'http://localhost:8080';
-const API_URL = 'http://localhost:8080';
+const API_URL = 'https://beatmagic.onrender.com';
 console.log("API URL : ");
 console.log(API_URL);
 export function uploadAudio({ file, url, preset = "8d" , systemAddress, onProgress }) {
