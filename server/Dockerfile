@@ -16,7 +16,8 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     && rm -rf /var/lib/apt/lists/*
 
 # ---- Deno Installation (yt-dlp needs a JS runtime) ----
-RUN curl -fsSL https://deno.land | sh
+# RUN curl -fsSL https://deno.land | sh
+RUN curl -fsSL https://deno.land/install.sh | sh
 ENV DENO_INSTALL="/root/.deno"
 ENV PATH="$DENO_INSTALL/bin:$PATH"
 
