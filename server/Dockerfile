@@ -16,24 +16,24 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     && rm -rf /var/lib/apt/lists/*
 
 # ---- Deno Installation (yt-dlp needs a JS runtime) ----
-RUN curl -fsSL https://deno.land/install.sh | sh
+RUN curl -fsSL https://deno.land | sh
 ENV DENO_INSTALL="/root/.deno"
 ENV PATH="$DENO_INSTALL/bin:$PATH"
 
 WORKDIR /app
 
-# ---- Python Virtual Environment Setup (Fixes the environment lock) ----
+# ---- Python Virtual Environment Setup ----
 RUN python3 -m venv /opt/venv
 ENV PATH="/opt/venv/bin:$PATH"
 
 # Ensure pip is up to date inside venv
 RUN pip install --no-cache-dir --upgrade pip setuptools wheel
 
-# ---------------- PYTHON DEPS (Installed safely inside active venv) ----------------
+# ---------------- PYTHON DEPS (Updated Spleeter version for Python 3.11+) ----------------
 RUN pip install --no-cache-dir \
     "numpy<2" \
     yt-dlp \
-    spleeter==2.4.0 \
+    spleeter==2.4.2 \
     soundfile \
     librosa \
     scipy \
@@ -41,7 +41,7 @@ RUN pip install --no-cache-dir \
 
 ENV NVIDIA_VISIBLE_DEVICES="none"    
 
-# ---- FORCE MODEL DOWNLOAD AT BUILD TIME (Now safely running inside venv) ----
+# ---- FORCE MODEL DOWNLOAD AT BUILD TIME (Uses updated model instantiation if needed) ----
 RUN python3 - <<EOF
 from spleeter.separator import Separator
 Separator('spleeter:2stems')
