@@ -80,12 +80,12 @@ export default function Hero() {
   }, [mode]);
 
   useEffect(()=>{
-    if(!processing) return;
+    if(!processing || !jobId) return;
     const interval = setInterval(()=>{
       getJobStatus();
     },2000);
     return () => clearInterval(interval);
-  },[processing]);
+  },[processing,jobId]);
 
   // drag & drop handlers
   function handleDrop(e) {
@@ -169,6 +169,9 @@ export default function Hero() {
           }
         },
       });
+
+      console.log("Here is handleConvert function First Response  : ");
+      console.log(res);
 
       setJobId(res.jobId);
 

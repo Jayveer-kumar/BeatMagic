@@ -20,6 +20,27 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     unzip \
     && rm -rf /var/lib/apt/lists/*
 
+# ---------------- PYTHON DEPS ----------------
+RUN pip install --no-cache-dir \
+    "numpy<2" \
+    yt-dlp \
+    spleeter==2.4.0 \
+    soundfile \
+    librosa \
+    scipy \
+    pydub
+
+
+ENV NVIDIA_VISIBLE_DEVICES="none"    
+
+#  FORCE MODEL DOWNLOAD AT BUILD TIME
+RUN python - <<EOF
+from spleeter.separator import Separator
+Separator('spleeter:2stems')
+print("Spleeter model cached")
+EOF
+
+# ---------------- APP ----------------
 # ---- Deno (yt-dlp needs a JS runtime to solve YouTube's challenge) ----
 RUN curl -fsSL https://deno.land/install.sh | sh
 ENV DENO_INSTALL="/root/.deno"

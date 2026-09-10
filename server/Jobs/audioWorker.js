@@ -1,4 +1,5 @@
-import { jobs } from "./jobStore.js";
+// import { jobs } from "./jobStore.js";
+import Jobs from "../models/Jobs.js";
 import runPython from "../services/pythonService.js";
 import { uploadToCloud , deleteFromCloud } from "../services/cloudService.js";
 import Audio from "../models/Audio.js";
@@ -12,8 +13,8 @@ export const startAudioJob = async ({jobId,buffer,effect,systemAddress }) => {
   if (!job) return;
 
   try {
-    job.status = "processing";
-    job.progress = 10;
+
+    await Jobs.updateOne({jobId} , {status : "processing" , progress : 10})
 
     // Delete Old Data
     const old = await Audio.findOne({ systemAddress });
@@ -24,21 +25,22 @@ export const startAudioJob = async ({jobId,buffer,effect,systemAddress }) => {
     }
     await Audio.deleteMany({ systemAddress });
 
-    job.progress = 30;
+    await Jobs.updateOne({jobId}, {progress : 30})
 
     //  HEAVY PART 
     const outputBuffer = await runPython(buffer, effect);
     console.log("Song is converted successfully  : ");
-    job.progress = 70;
+    await Jobs.updateOne({jobId}, {progress : 70})
 
     //  Upload to cloud
     const upload = await uploadToCloud(outputBuffer);
     console.log("Song is uploaded to cloud Successfully : See ");
     console.log(upload);
-    job.progress = 90;
+    await Jobs.updateOne({jobId}, {progress : 90})
 
     await CloudCleanup.create({
-      publicId: upload.publicId
+      publicId: upload.publicId,
+      safeAfter : new Date(Date.now() + 30 * 60 * 1000) // 30 minutes
     });
 
     await Audio.create({
@@ -48,15 +50,20 @@ export const startAudioJob = async ({jobId,buffer,effect,systemAddress }) => {
       expireAt: new Date(Date.now() + 30 * 60 * 1000),
     });
 
-    job.status = "done";
-    job.progress = 100;
-    job.url = upload.url;
-    console.log("Job is completed with progress 100 and with audio url see : ");
-
-    console.log(job);
+    await Jobs.updateOne({
+      jobId
+    }, {
+      status: "done",
+      progress: 100,
+      url: upload.url
+    });
   } catch (err) {
-    job.status = "error";
-    job.error = err.message;
+    await Jobs.updateOne({
+      jobId
+    }, {
+      status: "error",
+      error: err.message
+    });
   }
 };
 

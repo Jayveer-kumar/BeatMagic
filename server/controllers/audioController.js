@@ -4,7 +4,8 @@ import runPython from "../services/pythonService.js";
 import { uploadToCloud, deleteFromCloud } from "../services/cloudService.js";
 import fs from "fs";
 import CloudCleanup from "../models/CloudCleanup.js";
-import { jobs } from "../Jobs/jobStore.js";
+// import { jobs } from "../Jobs/jobStore.js";
+import Jobs from "../models/Jobs.js";
 import { startAudioJob , startAudioJobFromUrl} from "../Jobs/audioWorker.js"; 
 import { randomUUID } from "crypto";
 
@@ -21,12 +22,12 @@ export const processUploaded = async (req, res) => {
 
   const jobId = randomUUID();
 
-  jobs.set(jobId,{
-    status : "Pending",
-    progress : 0,
-    url : null,
+  await Jobs.create({
+    jobId,
+    status: "pending",
+    progress: 0,
     error : null
-  })
+  });
   
   console.log("Job is seted : ");
   // Background Work
@@ -159,16 +160,17 @@ export const processFromURL = async (req, res) => {
 };
 
 export const jobStatus = async (req,res) =>{
+  console.log("Request Recieved for Job status : ");
   const job = jobs.get(req.params.jobId);
   if(!job){
     return res.status(404).json({success : false , message : `No any audio found for this ${req.params.jobId} job `});
   }
 
   return res.json({
-    sucess: true,
-    status : job.status,
-    progress : job.progress,
-    url : job.url,
-    error : job.error
+    success: true,
+    status: job.status,
+    progress: job.progress,
+    url: job.url,
+    error: job.error
   });
 };

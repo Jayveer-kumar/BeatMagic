@@ -71,7 +71,14 @@ const runPython = (inputBuffer, effect) => {
         outputPath,
         "--preset",
         effect
-      ]);
+      ],
+      {
+        env : {
+          ...process.env,
+          CUDA_VISIBLE_DEVICES: "-1"
+        }
+      }
+    );
 
       let errorOutput = "";
 
