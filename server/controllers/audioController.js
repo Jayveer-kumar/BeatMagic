@@ -96,7 +96,7 @@ export const processFromURL = async (req, res) => {
 
   const jobId = randomUUID();
 
-  jobs.set(jobId,{
+  Jobs.set(jobId,{
     status : "Pending",
     progress : 0,
     url : null,
@@ -161,7 +161,7 @@ export const processFromURL = async (req, res) => {
 
 export const jobStatus = async (req,res) =>{
   console.log("Request Recieved for Job status : ");
-  const job = jobs.get(req.params.jobId);
+  const job = Jobs.get(req.params.jobId);
   if(!job){
     return res.status(404).json({success : false , message : `No any audio found for this ${req.params.jobId} job `});
   }
