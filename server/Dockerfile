@@ -50,6 +50,7 @@ EOF
 # ---- Python requirements from file ----
 COPY server/audioEngine/requirements.txt ./audioEngine/requirements.txt
 RUN pip install --no-cache-dir -r audioEngine/requirements.txt
+RUN python3 -c "import numpy; assert numpy.__version__.startswith('1.'), f'Wrong numpy: {numpy.__version__}'"
 
 # ---- yt-dlp config file (general flags, client-switching is handled in JS) ----
 COPY server/audioEngine/yt-dlp.conf ./audioEngine/yt-dlp.conf

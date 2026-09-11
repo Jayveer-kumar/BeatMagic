@@ -2,13 +2,13 @@
 # Run `pip freeze` inside your working local venv and paste the real numbers here —
 # these are reasonable defaults, not guaranteed to match what you already tested with.
 
-librosa==0.11.0
-numpy==2.3.2
+librosa==0.10.2
+numpy<2
 numpy-minmax==0.5.0
 numpy-rms==0.6.0
 pydub==0.25.1
-scipy==1.16.1
-soundfile==0.13.1
+scipy==1.13.1
+soundfile==0.12.1
 
 # spleeter is heavy (pulls in tensorflow) and your code already wraps its import
 # in a try/except — only add it here if you actually use vocal/instrument separation.
