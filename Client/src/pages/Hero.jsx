@@ -211,8 +211,8 @@ export default function Hero() {
 
   async function getJobStatus() {
     console.log("Get Job status Function Called : ");
-    // let res = await fetch(`https://beatmagic.onrender.com/api/audio/job-status/${jobId}`);
-    let res = await fetch(`http://localhost:8080/api/audio/job-status/${jobId}`);
+    let res = await fetch(`https://beatmagic.onrender.com/api/audio/job-status/${jobId}`);
+    // let res = await fetch(`http://localhost:8080/api/audio/job-status/${jobId}`);
     let data = await res.json();
     console.log(data);
     if(data.status === "done"){
