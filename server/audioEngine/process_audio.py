@@ -434,6 +434,8 @@ try:
 except Exception:
     HAVE_SPLEETER = False
 
+HAVE_SPLEETER = False    
+
 # -------------------------
 # Utilities
 # -------------------------
