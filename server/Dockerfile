@@ -15,7 +15,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     unzip \
     && rm -rf /var/lib/apt/lists/*
 
-# ---- Deno Installation (yt-dlp needs a JS runtime) ----
+# ---- Deno Installation (yt-dlp needs a JS runtime to solve YouTube's challenge) ----
 RUN curl -fsSL https://deno.land/install.sh | sh
 ENV DENO_INSTALL="/root/.deno"
 ENV PATH="$DENO_INSTALL/bin:$PATH"
@@ -26,7 +26,6 @@ WORKDIR /app
 RUN python3 -m venv /opt/venv
 ENV PATH="/opt/venv/bin:$PATH"
 
-# Ensure pip is up to date inside venv
 RUN pip install --no-cache-dir --upgrade pip setuptools wheel
 
 # ---------------- PYTHON DEPS (Spleeter 2.4.2 for Python 3.11+) ----------------
@@ -39,7 +38,7 @@ RUN pip install --no-cache-dir \
     scipy \
     pydub
 
-ENV NVIDIA_VISIBLE_DEVICES="none"    
+ENV NVIDIA_VISIBLE_DEVICES="none"
 
 # ---- FORCE MODEL DOWNLOAD AT BUILD TIME ----
 RUN python3 - <<EOF
@@ -52,6 +51,9 @@ EOF
 COPY server/audioEngine/requirements.txt ./audioEngine/requirements.txt
 RUN pip install --no-cache-dir -r audioEngine/requirements.txt
 
+# ---- yt-dlp config file (general flags, client-switching is handled in JS) ----
+COPY server/audioEngine/yt-dlp.conf ./audioEngine/yt-dlp.conf
+
 # ---- Node deps ----
 COPY server/package*.json ./
 RUN npm ci --omit=dev --legacy-peer-deps
@@ -59,10 +61,104 @@ RUN npm ci --omit=dev --legacy-peer-deps
 # ---- App code ----
 COPY server/ .
 
+# ---- Entrypoint (auto-updates yt-dlp on every container start) ----
+COPY server/entrypoint.sh /app/entrypoint.sh
+RUN sed -i 's/\r$//' /app/entrypoint.sh && chmod +x /app/entrypoint.sh
+
 ENV NODE_ENV=production
 EXPOSE 8080
 
-CMD ["node", "app.js"]
+ENTRYPOINT ["/app/entrypoint.sh"]
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+# # ---- BeatMagic server image ----
+# # Node.js backend + Python audio engine + ffmpeg + yt-dlp + deno, all pinned in one place.
+# FROM node:20-bookworm-slim
+
+# # ---- System dependencies ----
+# RUN apt-get update && apt-get install -y --no-install-recommends \
+#     python3 \
+#     python3-pip \
+#     python3-venv \
+#     ffmpeg \
+#     libsndfile1 \
+#     build-essential \
+#     curl \
+#     ca-certificates \
+#     unzip \
+#     && rm -rf /var/lib/apt/lists/*
+
+# # ---- Deno Installation (yt-dlp needs a JS runtime) ----
+# RUN curl -fsSL https://deno.land/install.sh | sh
+# ENV DENO_INSTALL="/root/.deno"
+# ENV PATH="$DENO_INSTALL/bin:$PATH"
+
+# WORKDIR /app
+
+# # ---- Python Virtual Environment Setup ----
+# RUN python3 -m venv /opt/venv
+# ENV PATH="/opt/venv/bin:$PATH"
+
+# # Ensure pip is up to date inside venv
+# RUN pip install --no-cache-dir --upgrade pip setuptools wheel
+
+# # ---------------- PYTHON DEPS (Spleeter 2.4.2 for Python 3.11+) ----------------
+# RUN pip install --no-cache-dir \
+#     "numpy<2" \
+#     yt-dlp \
+#     spleeter==2.4.2 \
+#     soundfile \
+#     librosa \
+#     scipy \
+#     pydub
+
+# ENV NVIDIA_VISIBLE_DEVICES="none"    
+
+# # ---- FORCE MODEL DOWNLOAD AT BUILD TIME ----
+# RUN python3 - <<EOF
+# from spleeter.separator import Separator
+# Separator('spleeter:2stems')
+# print("Spleeter model cached")
+# EOF
+
+# # ---- Python requirements from file ----
+# COPY server/audioEngine/requirements.txt ./audioEngine/requirements.txt
+# RUN pip install --no-cache-dir -r audioEngine/requirements.txt
+
+# # ---- Node deps ----
+# COPY server/package*.json ./
+# RUN npm ci --omit=dev --legacy-peer-deps
+
+# # ---- App code ----
+# COPY server/ .
+
+# ENV NODE_ENV=production
+# EXPOSE 8080
+
+# CMD ["node", "app.js"]
 
 
 
